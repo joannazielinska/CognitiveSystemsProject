@@ -41,6 +41,7 @@ import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.ImageReader;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -58,6 +59,9 @@ import android.widget.TextView;
 
 import com.example.asus.csproject.R;
 import com.example.asus.csproject.translation.Translator;
+import com.google.cloud.translate.Translate;
+import com.google.cloud.translate.TranslateOptions;
+import com.google.cloud.translate.Translation;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -77,8 +81,10 @@ public class Camera2BasicFragment extends Fragment implements FragmentCompat.OnR
 
   private static final int PERMISSIONS_REQUEST_CODE = 1;
 
-  private String language;
+    private static final String API_KEY = "YOUR_KEY";
 
+    private String language;
+  private final Handler textViewHandler = new Handler();
   private final Object lock = new Object();
   private boolean runClassifier = false;
   private boolean checkedPermissions = false;
@@ -175,7 +181,28 @@ public class Camera2BasicFragment extends Fragment implements FragmentCompat.OnR
           new Runnable() {
             @Override
             public void run() {
-              textView.setText(text);
+
+              new AsyncTask<Void, Void, Void>() {
+                @Override
+                protected Void doInBackground(Void... params) {
+                  TranslateOptions options = TranslateOptions.newBuilder()
+                          .setApiKey(API_KEY).build();
+                  Translate trService = options.getService();
+                  final String originalText = text;
+                  final Translation translation = trService.translate(originalText, Translate.TranslateOption.targetLanguage("pl"));
+
+                  textViewHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                      if (textView != null) {
+                        textView.setText(originalText + " - " + translation.getTranslatedText());
+                      }
+                    }
+                  });
+                  return null;
+                }
+              }.execute();
+              //textView.setText(text);
             }
           });
     }
@@ -575,7 +602,7 @@ public class Camera2BasicFragment extends Fragment implements FragmentCompat.OnR
       Translator translator = new Translator();
       translator.SetLanguage(language);
       String translated = translator.translate(textToShow);
-      textToShow += ": " + translated;
+      //textToShow += ": " + translated;
     showToast(textToShow);
   }
 
@@ -616,4 +643,6 @@ public class Camera2BasicFragment extends Fragment implements FragmentCompat.OnR
           .create();
     }
   }
+
+
 }
