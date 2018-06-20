@@ -1,12 +1,17 @@
 package com.example.asus.csproject;
 
 import android.graphics.Bitmap;
-import android.support.v7.app.AppCompatActivity;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.google.cloud.translate.Translate;
+import com.google.cloud.translate.TranslateOptions;
+import com.google.cloud.translate.Translation;
 import com.wonderkiln.camerakit.CameraKitError;
 import com.wonderkiln.camerakit.CameraKitEvent;
 import com.wonderkiln.camerakit.CameraKitEventListener;
@@ -20,9 +25,13 @@ import java.util.concurrent.Executors;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final String API_KEY = "YOUR_KEY";
+
     private static final String MODEL_PATH = "mobilenet_quant_v1_224.tflite";
     private static final String LABEL_PATH = "labels.txt";
     private static final int INPUT_SIZE = 224;
+
+    private final Handler textViewHandler = new Handler();;
 
     private Classifier classifier;
 
@@ -37,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         setUI();
-       initTensorFlowAndLoadModel();
+        initTensorFlowAndLoadModel();
 
     }
 
@@ -67,7 +76,28 @@ public class MainActivity extends AppCompatActivity {
 
                 final List<Classifier.Recognition> results = classifier.recognizeImage(bitmap);
 
-                translatedTextView.setText(results.get(0).getTitle().toString());            }
+                new AsyncTask<Void, Void, Void>() {
+                    @Override
+                    protected Void doInBackground(Void... params) {
+                        TranslateOptions options = TranslateOptions.newBuilder()
+                                .setApiKey(API_KEY).build();
+                        Translate trService = options.getService();
+                        final String originalText = results.get(0).getTitle();
+                        final Translation translation = trService.translate(originalText, Translate.TranslateOption.targetLanguage("pl"));
+
+                        textViewHandler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (translatedTextView != null) {
+                                    translatedTextView.setText(originalText + " - " + translation.getTranslatedText());
+                                }
+                            }
+                        });
+                        return null;
+                    }
+                }.execute();
+
+            }
 
             @Override
             public void onVideo(CameraKitVideo cameraKitVideo) {
