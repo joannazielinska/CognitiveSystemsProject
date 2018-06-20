@@ -23,7 +23,6 @@ tools:context="com.example.asus.csproject.MainActivity">
 
     <TextView
         android:id="@+id/translatedTextView"
-        android:text="Object Detected"
         android:textAlignment="center"
         android:textAllCaps="true"
         android:textSize="20sp"

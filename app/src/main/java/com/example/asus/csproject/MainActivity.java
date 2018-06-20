@@ -1,5 +1,6 @@
 package com.example.asus.csproject;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -7,6 +8,10 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.example.asus.csproject.classifier.Classifier;
+import com.example.asus.csproject.classifier.ImageClassifier;
+import com.example.asus.csproject.classifier.TensorFlowImageClassifier;
+import com.example.asus.csproject.translation.Language;
 import com.wonderkiln.camerakit.CameraKitError;
 import com.wonderkiln.camerakit.CameraKitEvent;
 import com.wonderkiln.camerakit.CameraKitEventListener;
@@ -14,18 +19,19 @@ import com.wonderkiln.camerakit.CameraKitImage;
 import com.wonderkiln.camerakit.CameraKitVideo;
 import com.wonderkiln.camerakit.CameraView;
 
-import java.util.List;
+import java.io.IOException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String MODEL_PATH = "mobilenet_quant_v1_224.tflite";
-    private static final String LABEL_PATH = "labels.txt";
+    private static final String MODEL_PATH = "graph.lite";
+    private static final String LABEL_PATH = "retrained_labels.txt";
     private static final int INPUT_SIZE = 224;
 
     private Classifier classifier;
-
+    private ImageClassifier iclassifier;
+    private Language language;
     private Button detectButton;
     private CameraView cameraView;
     private TextView translatedTextView;
@@ -35,12 +41,32 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        Intent intent = getIntent();
+        String lang = intent.getStringExtra("language");
+        if(lang != null) setLanguage(lang);
         setUI();
-       initTensorFlowAndLoadModel();
+       //initTensorFlowAndLoadModel();
+        try {
+            iclassifier = new ImageClassifier(getAssets());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
     }
 
+    private void setLanguage(String lang){
+        switch (lang.toUpperCase()){
+            case "POLISH":
+                language = Language.POLISH;
+                break;
+            case "ENGLISH":
+                language = Language.ENGLISH;
+                break;
+            case "GERMAN":
+                language = Language.GERMAN;
+                break;
+        }
+    }
     private void setUI(){
 
         cameraView = findViewById(R.id.cameraView);
@@ -62,12 +88,16 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onImage(CameraKitImage cameraKitImage) {
 
-                Bitmap bitmap = cameraKitImage.getBitmap();bitmap = Bitmap.createScaledBitmap(bitmap, INPUT_SIZE, INPUT_SIZE, false);
+                Bitmap bitmap = cameraKitImage.getBitmap();
+                bitmap = Bitmap.createScaledBitmap(bitmap, INPUT_SIZE, INPUT_SIZE, false);
 
 
-                final List<Classifier.Recognition> results = classifier.recognizeImage(bitmap);
-
-                translatedTextView.setText(results.get(0).getTitle().toString());            }
+                //final List<Classifier.Recognition> results = classifier.recognizeImage(bitmap);
+                String textToShow = iclassifier.classifyFrame(bitmap);
+                bitmap.recycle();
+                //translatedTextView.setText(results.get(0).getTitle().toString());
+                translatedTextView.setText(textToShow);
+            }
 
             @Override
             public void onVideo(CameraKitVideo cameraKitVideo) {
