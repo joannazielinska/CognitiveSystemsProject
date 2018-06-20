@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -20,17 +21,18 @@ import com.wonderkiln.camerakit.CameraKitVideo;
 import com.wonderkiln.camerakit.CameraView;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String MODEL_PATH = "graph.lite";
+    private static final String MODEL_PATH = "optimized_graph.lite";
     private static final String LABEL_PATH = "retrained_labels.txt";
     private static final int INPUT_SIZE = 224;
 
     private Classifier classifier;
-    private ImageClassifier iclassifier;
+    private ImageClassifier imageClassifier;
     private Language language;
     private Button detectButton;
     private CameraView cameraView;
@@ -45,12 +47,13 @@ public class MainActivity extends AppCompatActivity {
         String lang = intent.getStringExtra("language");
         if(lang != null) setLanguage(lang);
         setUI();
-       //initTensorFlowAndLoadModel();
+        initTensorFlowAndLoadModel();
         try {
-            iclassifier = new ImageClassifier(getAssets());
+            imageClassifier = new ImageClassifier(MainActivity.this);
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException("Error initializing TensorFlow!", e);
         }
+
 
     }
 
@@ -91,12 +94,14 @@ public class MainActivity extends AppCompatActivity {
                 Bitmap bitmap = cameraKitImage.getBitmap();
                 bitmap = Bitmap.createScaledBitmap(bitmap, INPUT_SIZE, INPUT_SIZE, false);
 
+               final List<Classifier.Recognition> results = classifier.recognizeImage(bitmap);
+               translatedTextView.setText(results.get(0).getTitle().toString());
 
-                //final List<Classifier.Recognition> results = classifier.recognizeImage(bitmap);
-                String textToShow = iclassifier.classifyFrame(bitmap);
-                bitmap.recycle();
-                //translatedTextView.setText(results.get(0).getTitle().toString());
-                translatedTextView.setText(textToShow);
+//                Bitmap bitmap = cameraKitImage.getBitmap();
+//                bitmap = Bitmap.createScaledBitmap (bitmap, ImageClassifier.DIM_IMG_SIZE_X, ImageClassifier.DIM_IMG_SIZE_Y, false);
+//                String textToShow = imageClassifier.classifyFrame(bitmap);
+//                bitmap.recycle();
+//                translatedTextView.setText(textToShow);
             }
 
             @Override
@@ -109,7 +114,9 @@ public class MainActivity extends AppCompatActivity {
         detectButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 cameraView.captureImage();
+                Log.d("MAIN_ACTIVITY", "detect button clicked");
             }
         });
     }
@@ -147,7 +154,6 @@ public class MainActivity extends AppCompatActivity {
                             MODEL_PATH,
                             LABEL_PATH,
                             INPUT_SIZE);
-                    makeButtonVisible();
                 } catch (final Exception e) {
                     throw new RuntimeException("Error initializing TensorFlow!", e);
                 }
@@ -155,12 +161,4 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void makeButtonVisible() {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                detectButton.setVisibility(View.VISIBLE);
-            }
-        });
-    }
 }

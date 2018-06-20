@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 
+
 import com.example.asus.csproject.translation.Language;
 
 public class StartActivity extends AppCompatActivity {
@@ -57,7 +58,7 @@ public class StartActivity extends AppCompatActivity {
 
     private void startMainActivity(){
         if(language != null){
-            Intent i = new Intent(StartActivity.this, MainActivity.class);
+            Intent i = new Intent(StartActivity.this, CameraActivity.class);
             i.putExtra("language", language.toString());
             startActivity(i);
         }

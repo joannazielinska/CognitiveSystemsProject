@@ -32,4 +32,16 @@
         android:layout_marginRight="6dp"
         android:layout_marginBottom="60dp"
         android:text="English" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="39dp"
+        android:gravity="center"
+        android:text="Choose language"
+        android:textSize="18sp"
+        android:textAllCaps="true"/>
 </RelativeLayout>

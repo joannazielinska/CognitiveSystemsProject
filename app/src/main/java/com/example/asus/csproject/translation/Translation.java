@@ -5,17 +5,11 @@ import java.util.Map;
 
 public class Translation {
 
-    private static final String [] englishArray = {"apple", "avocado", "banana", "grape pink", "grape white", "grapefruit pink",
-                            "grapefruit white", "kiwi", "lemon", "limes", "mandarine", "mango", "orange",
-                            "peach", "pear", "pomegranate", "raspberry", "strawberry"};
+    private static final String [] englishArray = {"apple",  "banana"};
 
-    private static final String[] germanArray = {"Apfel", "Avocado" ,"Banane" ,"Trauben rosa" , "Trauben weiß" , "Grapefruit Pink",
-                            "Grapefruit weiß", "Kiwi", "Zitrone", "Zitronen","Mandarine" ,"Mango" ,"Orange",
-                            "Pfirsich","Birne" ,"Granatapfel" ,"Himbeere" ,"Erdbeere"};
+    private static final String[] germanArray = {"Apfel", "Banane"};
 
-    private static final String[] polishArray = {"jabłko", "awokado", "banan", "różowe winogrono", "białe winogrono", "różowy grejpfrut",
-                            "biały grejpfrut", "kiwi", "cytrynya", "limonka", "mandarynka", "pomarańcz", "brzoskwinia",
-                            "gruszka", "granat", "malina", "truskawka"};
+    private static final String[] polishArray = {"jabłko", "banan"};
 
     private static final int wordCount = englishArray.length;
 
@@ -39,10 +33,10 @@ public class Translation {
 
     public String  getGerman(String word){
 
-        return englishToGerman.get(word);
+        return englishToGerman.get(word.toLowerCase());
     }
 
-    public String  getPolish(String word){
-        return englishToPolish.get(word);
+    public String getPolish(String word){
+        return englishToPolish.get(word.toLowerCase());
     }
 }
