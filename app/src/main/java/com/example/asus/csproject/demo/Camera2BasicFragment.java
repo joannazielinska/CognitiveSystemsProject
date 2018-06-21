@@ -572,10 +572,13 @@ public class Camera2BasicFragment extends Fragment implements FragmentCompat.OnR
         textureView.getBitmap(ImageClassifier.DIM_IMG_SIZE_X, ImageClassifier.DIM_IMG_SIZE_Y);
     String textToShow = classifier.classifyFrame(bitmap);
     bitmap.recycle();
-      Translator translator = new Translator();
-      translator.SetLanguage(language);
-      String translated = translator.translate(textToShow);
-      textToShow += ": " + translated;
+    if(!language.equalsIgnoreCase("english")){
+        Translator translator = new Translator();
+        translator.SetLanguage(language);
+        String translated = translator.translate(textToShow);
+        textToShow += ": " + translated;
+    }
+
     showToast(textToShow);
   }
 
